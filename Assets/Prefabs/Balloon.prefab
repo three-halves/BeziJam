@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _dashSpeed: {x: 20, y: 20, z: 20}
-  _disableGravTime: 0.25
+  _disableGravTime: 0.3
   _reappearTime: 3
   _collider: {fileID: 4158319327370640252}
   _spriteRenderer: {fileID: 7719535336275689383}
