@@ -41,6 +41,9 @@ public class Player : MonoBehaviour
     private float wallRunTimer = 0f;
     private Vector3 wallRunDirection;
     private Vector3 WallRunNormal;
+
+    private float targetCameraTilt = 0f;
+    private float camTiltVel = 0f;
     
     void Start()
     {
@@ -106,6 +109,13 @@ public class Player : MonoBehaviour
 
         // Cap fall speed
         delta.y = Math.Max(delta.y, inWallrun ? 0 : _maxFallSpeed);
+
+        // Camera tilt logic
+        cameraTransform.eulerAngles = new Vector3(
+            cameraTransform.eulerAngles.x,
+            cameraTransform.eulerAngles.y,
+            Mathf.SmoothDamp(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
+        );
         
         characterController.Move(delta);
     }
@@ -196,11 +206,15 @@ public class Player : MonoBehaviour
 
         // Don't wallrun if no wall is found, input is not perpendicular to wall, or we are grounded
         if (hit.normal == Vector3.zero || Vector3.Dot(hit.normal, inputDir) > 0 || grounded) 
+        {
+            camTiltVel = 0f;
             return false;
+        }
 
         // Otherwise, initiate wallrun
         wallRunDirection = Vector3.Cross(Vector3.up, hit.normal);
         wallRunDirection *= Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
+        camTiltVel = 15 * Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
         WallRunNormal = hit.normal;
         return true;
     }
