@@ -22,7 +22,11 @@ public class AttackableBalloon : AttackableBase
         reappearTimer -= Time.deltaTime;
         _collider.enabled = reappearTimer < 0;
         _spriteRenderer.enabled = reappearTimer < _reappearTime / 1.25f;
-        if (reappearTimer > 0) _spriteRenderer.sprite = usedSprite; 
+        if (reappearTimer > 0)
+        {
+            _spriteRenderer.sprite = usedSprite; 
+            if (reappearTimer - Time.deltaTime < 0) _spriteRenderer.sprite = unhighlightedSprite;
+        }
     }
 
     public override void OnAttacked(Player attacker)

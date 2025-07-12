@@ -123,7 +123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54a56e7e353f47b4ba32ce1c94691eb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dashSpeed: {x: 30, y: 45, z: 30}
+  _dashSpeed: {x: 30, y: 40, z: 30}
   _reappearTime: 3
   _collider: {fileID: 4158319327370640252}
   _spriteRenderer: {fileID: 7719535336275689383}

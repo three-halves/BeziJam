@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 
     [SerializeField] CharacterController characterController;
     [SerializeField] private TextMeshProUGUI debugText;
+    [SerializeField] private Animator swordAnimator;
     private bool jumpPressed = false;
     private bool groundedLastTick = false;
     private bool grounded = false;
@@ -373,6 +374,9 @@ public class Player : MonoBehaviour
         if (!value.isPressed || attackTimer > 0) return;
 
         attackTimer = _attackCooldown;
+        swordAnimator.ResetTrigger("Attack");
+        swordAnimator.SetTrigger("Attack");
+
         // raycast forward and check if hit
         Physics.Raycast(
             transform.position + characterController.center,
