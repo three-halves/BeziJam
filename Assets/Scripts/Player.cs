@@ -19,9 +19,15 @@ public class Player : MonoBehaviour
     [SerializeField] private float _groundMaxVel;
     [SerializeField] private float _airMaxVel;
     [SerializeField] private float _friction;
+    [SerializeField] private float _maxFallSpeed;
     [SerializeField] private float _gravity;
     [SerializeField] private float _jumpVel;
     [SerializeField] private float _airControl;
+    [SerializeField] private float _wallRunTime;
+    [SerializeField] private float _wallRunSpeed;
+    // Wall run cooldown and reduced air control after walljump
+    [SerializeField] private float _wallRunRecoveryTime;
+    [SerializeField] private float _wallJumpLatVel;
     // Amount of times you can double jump
     [SerializeField] private int _airJumps;
     // Whether to apply friction in air or not
@@ -32,7 +38,10 @@ public class Player : MonoBehaviour
     private Vector3 _rawMoveInputDir = Vector3.zero;
     private int currentAirJumps;
     private Vector3 lateralVector = new(1, 0, 1);
-
+    private float wallRunTimer = 0f;
+    private Vector3 wallRunDirection;
+    private Vector3 WallRunNormal;
+    
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -54,36 +63,63 @@ public class Player : MonoBehaviour
             _moveInputDir, 
             jumpPressed, 
             grounded, 
-            Move(_moveInputDir, characterController.velocity).y
+            wallRunTimer
         );
 
         grounded = GroundCheck();
+        bool inWallrun = wallRunTimer > 0;
         if (grounded) currentAirJumps = _airJumps;
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity);
 
-        // Apply gravity and jump
-        if (jumpPressed && (grounded || currentAirJumps > 0))
+        // Jump logic
+        if (jumpPressed && (grounded || currentAirJumps > 0 || inWallrun))
         {
-            // redirect all lateral movement in jump direction
-            delta = Vector3.Scale(delta, lateralVector).magnitude * _moveInputDir;
+            // Redirect all lateral movement in jump direction
+            if(_moveInputDir != Vector3.zero)
+                delta = Vector3.Scale(delta, lateralVector).magnitude * _moveInputDir;
 
-            // apply vertical jump force
+            // Give some extra vel for double jumping out of a vertical jump
+            if (Vector3.Scale(delta, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime / 2f) 
+                delta = _groundMaxVel * Time.fixedDeltaTime / 2f * _moveInputDir;
+
+            // Apply lateral jump force while in wallrun
+            if (inWallrun)
+            {
+                wallRunTimer = 0f;
+                delta = _wallRunSpeed * Time.deltaTime * wallRunDirection + WallRunNormal * _wallJumpLatVel;
+            }
+
+            // Apply vertical jump force
             delta.y = _jumpVel * Time.fixedDeltaTime;
             jumpPressed = false;
-            if (!grounded) currentAirJumps--;
+
+            // Remove airjump if appropriate
+            if (!grounded && !inWallrun) currentAirJumps--;
 
         }
+
+        // Apply gravity
         delta.y += _gravity * Time.fixedDeltaTime;
         groundedLastTick = grounded;
 
+        // Cap fall speed
+        delta.y = Math.Max(delta.y, inWallrun ? 0 : _maxFallSpeed);
+        
         characterController.Move(delta);
     }
 
+    /// <summary>
+    /// Apply acceleration based on current velocity and desired velocity
+    /// </summary>
+    /// <param name="inputDir"></param>
+    /// <param name="currentVel"></param>
+    /// <param name="acceleration"></param>
+    /// <param name="maxVel"></param>
+    /// <returns></returns>
     private Vector3 AddAcceleration(Vector3 inputDir, Vector3 currentVel, float acceleration, float maxVel)
     {
-        // Apply acceleration based on current velocity and desired velocity
         float projectedVel = Vector3.Dot(currentVel * Time.fixedDeltaTime, inputDir);
         float accelVel = acceleration * Time.fixedDeltaTime;
         maxVel *= Time.fixedDeltaTime;
@@ -97,11 +133,35 @@ public class Player : MonoBehaviour
         return currentVel * Time.fixedDeltaTime + inputDir * accelVel;
     }
 
+    /// <summary>
+    /// Calculates current player state and returns an approprate movement vector based on state & input
+    /// </summary>
+    /// <param name="inputDir"></param>
+    /// <param name="currentVel"></param>
+    /// <returns></returns>
     private Vector3 Move(Vector3 inputDir, Vector3 currentVel)
     {
+        // Determine current state movement
         bool useGroundPhys = groundedLastTick && grounded;
+        bool shouldWallrun = CheckWallrun(inputDir);
+        // stop wallruning early if we stop hitting a wall
+        if (!shouldWallrun && wallRunTimer > 0) 
+            wallRunTimer = 0;
 
-        if (useGroundPhys)
+        // Initiate wallrun
+        if (shouldWallrun && wallRunTimer <= -_wallRunRecoveryTime)
+        {
+            wallRunTimer = _wallRunTime;
+            currentAirJumps = _airJumps;
+        }
+        wallRunTimer -= Time.fixedDeltaTime;
+
+        // Run current state movement
+        if (wallRunTimer > 0f)
+        {
+            return WallrunMove(inputDir, currentVel);
+        }
+        else if (useGroundPhys)
         {
             return GroundMove(inputDir, currentVel);
         }
@@ -109,6 +169,47 @@ public class Player : MonoBehaviour
         {
             return AirMove(inputDir, currentVel);
         }
+
+    }
+
+    /// <summary>
+    /// Check if we should initiate (or maintain) a wall run this frame
+    /// </summary>
+    private bool CheckWallrun(Vector3 inputDir)
+    {
+        Physics.Raycast(
+            transform.position + characterController.center,
+            transform.right,
+            out RaycastHit hit,
+            characterController.radius * 1.5f,
+            groundMask
+        );
+        // check left wall if no right wall found
+        if (hit.normal == Vector3.zero)
+            Physics.Raycast(
+            transform.position + characterController.center,
+            transform.right * -1,
+            out hit,
+            characterController.radius * 1.5f,
+            groundMask
+        );
+
+        // Don't wallrun if no wall is found, input is not perpendicular to wall, or we are grounded
+        if (hit.normal == Vector3.zero || Vector3.Dot(hit.normal, inputDir) > 0 || grounded) 
+            return false;
+
+        // Otherwise, initiate wallrun
+        wallRunDirection = Vector3.Cross(Vector3.up, hit.normal);
+        wallRunDirection *= Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
+        WallRunNormal = hit.normal;
+        return true;
+    }
+
+    private Vector3 WallrunMove(Vector3 inputDir, Vector3 currentVel)
+    {
+        float speed = Mathf.Max(Vector3.Scale(currentVel, lateralVector).magnitude, _wallRunSpeed);
+        return speed * Time.fixedDeltaTime * wallRunDirection 
+            + Vector3.Scale(currentVel, new Vector3(0, 1, 0)) * Time.fixedDeltaTime;
     }
 
     private Vector3 GroundMove(Vector3 inputDir, Vector3 currentVel)
@@ -135,10 +236,16 @@ public class Player : MonoBehaviour
         // Air control
         float oldyspeed = currentVel.y;
         currentVel.y = 0;
+
         float dot = Vector3.Dot(currentVel, inputDir);
+
         float magnitude = currentVel.magnitude;
         currentVel.Normalize();
-        float k = _airControl * dot * dot * Time.fixedDeltaTime;
+
+        // reduce air control while in walljump cooldown
+        float control = _airControl * Mathf.Min(-wallRunTimer / _wallRunRecoveryTime, 1f);
+
+        float k = control * dot * dot * Time.fixedDeltaTime;
         if (dot != 0)
         {
             currentVel *= currentVel.magnitude;
@@ -163,7 +270,7 @@ public class Player : MonoBehaviour
         Vector2 v = value.Get<Vector2>();
         // Rotate user and cam to with mouse x movement
         transform.Rotate(Vector3.up, v.x * camSens.x, Space.World);
-        cameraTransform.Rotate(Vector3.up, v.x * camSens.x, Space.World);
+        // cameraTransform.Rotate(Vector3.up, v.x * camSens.x, Space.World);
 
         // Rotate only cam with mouse y movement
         cameraTransform.Rotate(Vector3.right, v.y * camSens.y, Space.Self);
