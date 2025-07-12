@@ -14,6 +14,9 @@ public class Player : MonoBehaviour
     [SerializeField] private Animator swordAnimator;
     [SerializeField] private GameObject meterParent;
     [SerializeField] private Image meterFill;
+    [SerializeField] private Sprite airjumpIndicatorFull;
+    [SerializeField] private Sprite airjumpIndicatorEmpty;
+    [SerializeField] private Image airjumpIndicator;
     private bool jumpPressed = false;
     private bool groundedLastTick = false;
     private bool grounded = false;
@@ -97,6 +100,7 @@ public class Player : MonoBehaviour
         // UI
         meterParent.SetActive(inWallrun);
         meterFill.fillAmount = Mathf.Floor(wallRunTimer / _wallRunTime * 16) / 16;
+        airjumpIndicator.sprite = currentAirJumps > 0 ? airjumpIndicatorFull : airjumpIndicatorEmpty;
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity + applyForce);
@@ -140,7 +144,7 @@ public class Player : MonoBehaviour
         cameraTransform.eulerAngles = new Vector3(
             cameraTransform.eulerAngles.x,
             cameraTransform.eulerAngles.y,
-            Mathf.SmoothDamp(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
+            Mathf.SmoothDampAngle(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
         );
         
         characterController.Move(delta);
@@ -243,8 +247,9 @@ public class Player : MonoBehaviour
 
         // Otherwise, initiate wallrun
         wallRunDirection = Vector3.Cross(Vector3.up, hit.normal);
-        wallRunDirection *= Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
-        camTiltVel = 15 * Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
+        float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
+        wallRunDirection *= s;
+        camTiltVel = 15 * s;
         WallRunNormal = hit.normal;
         return true;
     }
