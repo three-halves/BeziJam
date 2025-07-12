@@ -22,12 +22,16 @@ public class Player : MonoBehaviour
     [SerializeField] private float _gravity;
     [SerializeField] private float _jumpVel;
     [SerializeField] private float _airControl;
+    // Amount of times you can double jump
+    [SerializeField] private int _airJumps;
     // Whether to apply friction in air or not
     [SerializeField] private bool _alwaysApplyFriction;
     [SerializeField] private LayerMask groundMask;
 
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
+    private int currentAirJumps;
+    private Vector3 lateralVector = new(1, 0, 1);
 
     void Start()
     {
@@ -54,15 +58,22 @@ public class Player : MonoBehaviour
         );
 
         grounded = GroundCheck();
+        if (grounded) currentAirJumps = _airJumps;
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity);
 
         // Apply gravity and jump
-        if (grounded && jumpPressed)
+        if (jumpPressed && (grounded || currentAirJumps > 0))
         {
+            // redirect all lateral movement in jump direction
+            delta = Vector3.Scale(delta, lateralVector).magnitude * _moveInputDir;
+
+            // apply vertical jump force
             delta.y = _jumpVel * Time.fixedDeltaTime;
             jumpPressed = false;
+            if (!grounded) currentAirJumps--;
+
         }
         delta.y += _gravity * Time.fixedDeltaTime;
         groundedLastTick = grounded;
@@ -103,7 +114,7 @@ public class Player : MonoBehaviour
     private Vector3 GroundMove(Vector3 inputDir, Vector3 currentVel)
     {
         // Apply friction
-        Vector3 lateralVel = Vector3.Scale(currentVel, new Vector3(1, 0, 1));
+        Vector3 lateralVel = Vector3.Scale(currentVel, lateralVector);
         if (lateralVel.magnitude != 0)
         {
             float d = lateralVel.magnitude * _friction * Time.fixedDeltaTime;
