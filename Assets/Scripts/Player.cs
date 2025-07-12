@@ -99,8 +99,8 @@ public class Player : MonoBehaviour
                 delta = Vector3.Scale(delta, lateralVector).magnitude * _moveInputDir;
 
             // Give some extra vel for double jumping out of a vertical jump
-            if (Vector3.Scale(delta, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime / 2f) 
-                delta = _groundMaxVel * Time.fixedDeltaTime / 2f * _moveInputDir;
+            if (Vector3.Scale(delta, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime / 3f) 
+                delta = _groundMaxVel * Time.fixedDeltaTime / 3f * _moveInputDir;
 
             // Apply lateral jump force while in wallrun
             if (inWallrun)

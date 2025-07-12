@@ -6,6 +6,9 @@ public class AttackableBalloon : AttackableBase
     [SerializeField] private float _reappearTime;
     [SerializeField] private Collider _collider;
     [SerializeField] private SpriteRenderer _spriteRenderer;
+    [SerializeField] private Sprite unhighlightedSprite;
+    [SerializeField] private Sprite highlightedSprite;
+    [SerializeField] private Sprite usedSprite;
 
     private float reappearTimer;
 
@@ -18,7 +21,8 @@ public class AttackableBalloon : AttackableBase
     {
         reappearTimer -= Time.deltaTime;
         _collider.enabled = reappearTimer < 0;
-        _spriteRenderer.enabled = reappearTimer < 0;
+        _spriteRenderer.enabled = reappearTimer < _reappearTime / 1.25f;
+        if (reappearTimer > 0) _spriteRenderer.sprite = usedSprite; 
     }
 
     public override void OnAttacked(Player attacker)
@@ -29,16 +33,16 @@ public class AttackableBalloon : AttackableBase
 
     public override void SetHighlight(bool highlighted)
     {
-        if (isHighlighted == highlighted) return;
+        if (isHighlighted == highlighted || reappearTimer > 0) return;
         isHighlighted = highlighted;
 
         if (highlighted)
         {
-            _spriteRenderer.color = Color.white;
+            _spriteRenderer.sprite = highlightedSprite;
         }
         else
         {
-            _spriteRenderer.color = Color.gray;
+            _spriteRenderer.sprite = unhighlightedSprite;
         }
     }
 }

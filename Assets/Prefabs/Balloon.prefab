@@ -54,8 +54,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.25, y: 1.25, z: 1.25}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1.25, y: 1.5, z: 1.25}
+  m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!212 &7719535336275689383
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -100,7 +100,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 7172b4b1f21bdca42a0b6d0b89bd692a, type: 3}
+  m_Sprite: {fileID: 21300000, guid: eda958036c7fd17418e79a33d4983c3f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -123,10 +123,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54a56e7e353f47b4ba32ce1c94691eb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dashSpeed: {x: 30, y: 37.5, z: 30}
+  _dashSpeed: {x: 30, y: 45, z: 30}
   _reappearTime: 3
   _collider: {fileID: 4158319327370640252}
   _spriteRenderer: {fileID: 7719535336275689383}
+  unhighlightedSprite: {fileID: 21300000, guid: eda958036c7fd17418e79a33d4983c3f, type: 3}
+  highlightedSprite: {fileID: 21300000, guid: 1a02f49055c79ca42b35b83a61f180d5, type: 3}
+  usedSprite: {fileID: 21300000, guid: 5c9140e89a51fed4297f581511efbb8e, type: 3}
 --- !u!114 &3217671013944142755
 MonoBehaviour:
   m_ObjectHideFlags: 0
