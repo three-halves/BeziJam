@@ -25,6 +25,8 @@ public class Player : MonoBehaviour
     [SerializeField] private float _airControl;
     [SerializeField] private float _wallRunTime;
     [SerializeField] private float _wallRunSpeed;
+    [SerializeField] private float _attackCooldown;
+    [SerializeField] private float _attackRange;
     // Wall run cooldown and reduced air control after walljump
     [SerializeField] private float _wallRunRecoveryTime;
     [SerializeField] private float _wallJumpLatVel;
@@ -33,6 +35,7 @@ public class Player : MonoBehaviour
     // Whether to apply friction in air or not
     [SerializeField] private bool _alwaysApplyFriction;
     [SerializeField] private LayerMask groundMask;
+    [SerializeField] private LayerMask attackableMask;
 
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
@@ -41,6 +44,11 @@ public class Player : MonoBehaviour
     private float wallRunTimer = 0f;
     private Vector3 wallRunDirection;
     private Vector3 WallRunNormal;
+    private float attackTimer = 0f;
+    private AttackableBase highlightedObject;
+
+    // Extra force caused by other objects, to be applied next tick
+    private Vector3 applyForce = Vector3.zero;
 
     private float targetCameraTilt = 0f;
     private float camTiltVel = 0f;
@@ -73,8 +81,15 @@ public class Player : MonoBehaviour
         bool inWallrun = wallRunTimer > 0;
         if (grounded) currentAirJumps = _airJumps;
 
+        // update timers
+        wallRunTimer -= Time.fixedDeltaTime;
+        attackTimer -= Time.fixedDeltaTime;
+
+        CheckHighlightableObjects();
+
         // Player movement
-        Vector3 delta = Move(_moveInputDir, characterController.velocity);
+        Vector3 delta = Move(_moveInputDir, characterController.velocity + applyForce);
+        applyForce = Vector3.zero;
 
         // Jump logic
         if (jumpPressed && (grounded || currentAirJumps > 0 || inWallrun))
@@ -118,6 +133,11 @@ public class Player : MonoBehaviour
         );
         
         characterController.Move(delta);
+    }
+
+    public void ApplyForce(Vector3 f)
+    {
+        applyForce += f;
     }
 
     /// <summary>
@@ -164,7 +184,6 @@ public class Player : MonoBehaviour
             wallRunTimer = _wallRunTime;
             currentAirJumps = _airJumps;
         }
-        wallRunTimer -= Time.fixedDeltaTime;
 
         // Run current state movement
         if (wallRunTimer > 0f)
@@ -291,6 +310,36 @@ public class Player : MonoBehaviour
         CalculateMoveInputDir();
     }
 
+    /// <summary>
+    /// Check if there are any attackable objects in attack range to highlight
+    /// </summary>
+    private void CheckHighlightableObjects()
+    {
+        // check if there are any objects we can highlight
+        Physics.Raycast(
+            transform.position + characterController.center,
+            cameraTransform.forward,
+            out RaycastHit hit,
+            _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime,
+            attackableMask
+        );
+
+        if (hit.collider == null)
+        {
+            highlightedObject?.SetHighlight(false);
+            return;
+        }
+        
+        if (hit.collider.TryGetComponent<AttackableBase>(out var found))
+        {
+            if (found != highlightedObject && highlightedObject != null) 
+                highlightedObject.SetHighlight(false);
+            
+            found.SetHighlight(true);
+            highlightedObject = found;
+        }
+    }
+
     public void OnMove(InputValue value)
     {
         Vector2 v = value.Get<Vector2>();
@@ -317,6 +366,30 @@ public class Player : MonoBehaviour
         characterController.enabled = false;
         transform.position = new Vector3(0, 2, 0);
         characterController.enabled = true;
+    }
+
+    public void OnAttack(InputValue value)
+    {
+        if (!value.isPressed || attackTimer > 0) return;
+
+        attackTimer = _attackCooldown;
+        // raycast forward and check if hit
+        Physics.Raycast(
+            transform.position + characterController.center,
+            cameraTransform.forward,
+            out RaycastHit hit,
+            _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime,
+            attackableMask
+        );
+        if (hit.collider == null) return;
+
+        if (hit.collider.TryGetComponent<AttackableBase>(out var attackedObj)) 
+            attackedObj.OnAttacked(this);
+    }
+
+    public Vector3 GetLookVector()
+    {
+        return cameraTransform.forward;
     }
 
     private bool GroundCheck()
