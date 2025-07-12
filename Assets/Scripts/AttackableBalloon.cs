@@ -3,6 +3,7 @@ using UnityEngine;
 public class AttackableBalloon : AttackableBase
 {
     [SerializeField] private Vector3 _dashSpeed;
+    [SerializeField] private float _disableGravTime;
     [SerializeField] private float _reappearTime;
     [SerializeField] private Collider _collider;
     [SerializeField] private SpriteRenderer _spriteRenderer;
@@ -32,6 +33,7 @@ public class AttackableBalloon : AttackableBase
     public override void OnAttacked(Player attacker)
     {
         attacker.ApplyForce(Vector3.Scale(attacker.GetLookVector(), _dashSpeed));
+        attacker.DisableGravityForSeconds(_disableGravTime);
         reappearTimer = _reappearTime;
     }
 

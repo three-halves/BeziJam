@@ -54,7 +54,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.25, y: 1.5, z: 1.25}
+  m_Size: {x: 1.4, y: 1.5, z: 1.4}
   m_Center: {x: 0, y: 0.25, z: 0}
 --- !u!212 &7719535336275689383
 SpriteRenderer:
@@ -123,7 +123,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54a56e7e353f47b4ba32ce1c94691eb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dashSpeed: {x: 30, y: 40, z: 30}
+  _dashSpeed: {x: 20, y: 20, z: 20}
+  _disableGravTime: 0.25
   _reappearTime: 3
   _collider: {fileID: 4158319327370640252}
   _spriteRenderer: {fileID: 7719535336275689383}

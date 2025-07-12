@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class Player : MonoBehaviour
     [SerializeField] CharacterController characterController;
     [SerializeField] private TextMeshProUGUI debugText;
     [SerializeField] private Animator swordAnimator;
+    [SerializeField] private GameObject meterParent;
+    [SerializeField] private Image meterFill;
     private bool jumpPressed = false;
     private bool groundedLastTick = false;
     private bool grounded = false;
@@ -47,6 +50,8 @@ public class Player : MonoBehaviour
     private Vector3 WallRunNormal;
     private float attackTimer = 0f;
     private AttackableBase highlightedObject;
+
+    private float disableGravityTimer = 0f;
 
     // Extra force caused by other objects, to be applied next tick
     private Vector3 applyForce = Vector3.zero;
@@ -85,8 +90,13 @@ public class Player : MonoBehaviour
         // update timers
         wallRunTimer -= Time.fixedDeltaTime;
         attackTimer -= Time.fixedDeltaTime;
+        disableGravityTimer -= Time.fixedDeltaTime;
 
         CheckHighlightableObjects();
+
+        // UI
+        meterParent.SetActive(inWallrun);
+        meterFill.fillAmount = Mathf.Floor(wallRunTimer / _wallRunTime * 16) / 16;
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity + applyForce);
@@ -120,7 +130,7 @@ public class Player : MonoBehaviour
         }
 
         // Apply gravity
-        delta.y += _gravity * Time.fixedDeltaTime;
+        if (disableGravityTimer <= 0) delta.y += _gravity * Time.fixedDeltaTime;
         groundedLastTick = grounded;
 
         // Cap fall speed
@@ -211,7 +221,7 @@ public class Player : MonoBehaviour
             transform.position + characterController.center,
             transform.right,
             out RaycastHit hit,
-            characterController.radius * 1.5f,
+            characterController.radius * 1.5f * (wallRunTimer > 0 ? 20f : 1f),
             groundMask
         );
         // check left wall if no right wall found
@@ -220,7 +230,7 @@ public class Player : MonoBehaviour
             transform.position + characterController.center,
             transform.right * -1,
             out hit,
-            characterController.radius * 1.5f,
+            characterController.radius * 1.5f * (wallRunTimer > 0 ? 20f : 1f),
             groundMask
         );
 
@@ -394,6 +404,11 @@ public class Player : MonoBehaviour
     public Vector3 GetLookVector()
     {
         return cameraTransform.forward;
+    }
+
+    public void DisableGravityForSeconds(float s)
+    {
+        disableGravityTimer = s;
     }
 
     private bool GroundCheck()
