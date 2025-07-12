@@ -9,9 +9,10 @@ public class Player : MonoBehaviour
     [SerializeField] private Vector2 camSens;
 
     [SerializeField] CharacterController characterController;
-    // private TextMeshProUGUI debugText;
+    [SerializeField] private TextMeshProUGUI debugText;
     private bool jumpPressed = false;
     private bool groundedLastTick = false;
+    private bool grounded = false;
 
     [SerializeField] private float _groundAcceleration;
     [SerializeField] private float _airAcceleration;
@@ -20,8 +21,10 @@ public class Player : MonoBehaviour
     [SerializeField] private float _friction;
     [SerializeField] private float _gravity;
     [SerializeField] private float _jumpVel;
+    [SerializeField] private float _airControl;
     // Whether to apply friction in air or not
     [SerializeField] private bool _alwaysApplyFriction;
+    [SerializeField] private LayerMask groundMask;
 
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
@@ -41,25 +44,28 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-        // debugText.text = string.Format(
-        //     "CCVel:\t{0}\nInputDir:\t{1}\n{2}\n{3}\n{4}", 
-        //     characterController.velocity, 
-        //     _moveInputDir, jumpPressed, 
-        //     characterController.isGrounded, 
-        //     Move(_moveInputDir, characterController.velocity).y
-        // );  
+        debugText.text = string.Format(
+            "CCVel:\t{0}\nInputDir:\t{1}\n{2}\nGrounded: {3}\n{4}", 
+            characterController.velocity, 
+            _moveInputDir, 
+            jumpPressed, 
+            grounded, 
+            Move(_moveInputDir, characterController.velocity).y
+        );
+
+        grounded = GroundCheck();
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity);
 
         // Apply gravity and jump
-        if (characterController.isGrounded && jumpPressed)
+        if (grounded && jumpPressed)
         {
             delta.y = _jumpVel * Time.fixedDeltaTime;
             jumpPressed = false;
         }
         delta.y += _gravity * Time.fixedDeltaTime;
-        groundedLastTick = characterController.isGrounded;
+        groundedLastTick = grounded;
 
         characterController.Move(delta);
     }
@@ -82,10 +88,23 @@ public class Player : MonoBehaviour
 
     private Vector3 Move(Vector3 inputDir, Vector3 currentVel)
     {
-        bool useGroundPhys = groundedLastTick && characterController.isGrounded;
+        bool useGroundPhys = groundedLastTick && grounded;
+
+        if (useGroundPhys)
+        {
+            return GroundMove(inputDir, currentVel);
+        }
+        else
+        {
+            return AirMove(inputDir, currentVel);
+        }
+    }
+
+    private Vector3 GroundMove(Vector3 inputDir, Vector3 currentVel)
+    {
         // Apply friction
         Vector3 lateralVel = Vector3.Scale(currentVel, new Vector3(1, 0, 1));
-        if (lateralVel.magnitude != 0 && (useGroundPhys|| _alwaysApplyFriction))
+        if (lateralVel.magnitude != 0)
         {
             float d = lateralVel.magnitude * _friction * Time.fixedDeltaTime;
             currentVel.x *= Mathf.Max(lateralVel.magnitude - d, 0) / lateralVel.magnitude;
@@ -95,8 +114,35 @@ public class Player : MonoBehaviour
         return AddAcceleration(
             inputDir,
             currentVel,
-            useGroundPhys ? _groundAcceleration : _airAcceleration,
-            useGroundPhys ? _groundMaxVel : _airMaxVel
+            _groundAcceleration,
+            _groundMaxVel
+            );
+    }
+
+    private Vector3 AirMove(Vector3 inputDir, Vector3 currentVel)
+    {
+        // Air control
+        float oldyspeed = currentVel.y;
+        currentVel.y = 0;
+        float dot = Vector3.Dot(currentVel, inputDir);
+        float magnitude = currentVel.magnitude;
+        currentVel.Normalize();
+        float k = _airControl * dot * dot * Time.fixedDeltaTime;
+        if (dot != 0)
+        {
+            currentVel *= currentVel.magnitude;
+            currentVel += inputDir * k;
+            currentVel.Normalize();
+        }
+        currentVel.x *= magnitude;
+        currentVel.y = oldyspeed;
+        currentVel.z *= magnitude;
+
+        return AddAcceleration(
+            inputDir,
+            currentVel,
+            _airAcceleration,
+            _airMaxVel
             );
     }
 
@@ -139,5 +185,10 @@ public class Player : MonoBehaviour
         characterController.enabled = false;
         transform.position = new Vector3(0, 2, 0);
         characterController.enabled = true;
+    }
+
+    private bool GroundCheck()
+    {
+        return Physics.Raycast(transform.position + characterController.center, Vector3.down, characterController.height * 0.55f, groundMask);
     }
 }
