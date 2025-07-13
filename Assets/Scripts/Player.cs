@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -73,6 +74,7 @@ public class Player : MonoBehaviour
     [SerializeField] private TextMeshProUGUI collectableText;
     private Vector3 spawnPosition;
     private Vector3 spawnRotation;
+    private Vector2 targetCamPosition = Vector2.zero;
 
     void Start()
     {
@@ -115,7 +117,7 @@ public class Player : MonoBehaviour
         if (inWallrun && meterFill.fillAmount != scaledWallTimer)
         {
             audioSource.pitch = 1f;
-            audioSource.PlayOneShot(wallRunSFX[(int)(scaledWallTimer * 16) % wallRunSFX.Length]);
+            audioSource.PlayOneShot(wallRunSFX[Math.Abs((int)(scaledWallTimer * 16) % wallRunSFX.Count())]);
         }
 
         // UI
@@ -172,10 +174,11 @@ public class Player : MonoBehaviour
 
         // Camera tilt logic
         cameraTransform.eulerAngles = new Vector3(
-            cameraTransform.eulerAngles.x,
+            targetCamPosition.y,
             cameraTransform.eulerAngles.y,
             Mathf.SmoothDampAngle(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
         );
+
         
         characterController.Move(delta);
     }
@@ -355,10 +358,14 @@ public class Player : MonoBehaviour
             PlayerPrefs.GetFloat("ysens", 0.1f) * (PlayerPrefs.GetInt("yinvert", 1) == 0 ? 1 : -1)
         );
         // Rotate user and cam to with mouse x movement
+        targetCamPosition.x += v.x * sens.x;
         transform.Rotate(Vector3.up, v.x * sens.x, Space.World);
 
         // Rotate only cam with mouse y movement
-        cameraTransform.Rotate(Vector3.right, v.y * sens.y, Space.Self);
+        // cameraTransform.Rotate(Vector3.right, v.y * sens.y, Space.Self);
+        targetCamPosition.y = Mathf.Clamp(targetCamPosition.y + v.y * sens.y, -85, 85);
+        // Vector3 ea = cameraTransform.eulerAngles;
+        // cameraTransform.eulerAngles = new Vector3(Mathf.Clamp(-Mathf.DeltaAngle(ea.x,0),-75,55), ea.y, ea.z);
         CalculateMoveInputDir();
     }
 
