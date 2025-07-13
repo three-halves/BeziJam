@@ -62,6 +62,13 @@ public class Player : MonoBehaviour
     private float targetCameraTilt = 0f;
     private float camTiltVel = 0f;
     
+    private int collectableCount = 0;
+    private int maxCollectableCount = 10;
+    [SerializeField] private GameObject collectableDisplay;
+    private float collectableDisplayTimer = 0f;
+    [SerializeField] private TextMeshProUGUI collectableText;
+    private Vector3 spawnPosition;
+    
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -73,6 +80,7 @@ public class Player : MonoBehaviour
         cameraTransform.forward = transform.forward;
         // Camera.main.GetComponent<FollowTransform>().SetToFollow(transform);
         // Camera.main.GetComponent<FollowTransform>().enabled = true;
+        spawnPosition = transform.position;
     }
 
     void FixedUpdate()
@@ -94,6 +102,7 @@ public class Player : MonoBehaviour
         wallRunTimer -= Time.fixedDeltaTime;
         attackTimer -= Time.fixedDeltaTime;
         disableGravityTimer -= Time.fixedDeltaTime;
+        collectableDisplayTimer -= Time.fixedDeltaTime;
 
         CheckHighlightableObjects();
 
@@ -101,6 +110,7 @@ public class Player : MonoBehaviour
         meterParent.SetActive(inWallrun);
         meterFill.fillAmount = Mathf.Floor(wallRunTimer / _wallRunTime * 16) / 16;
         airjumpIndicator.sprite = currentAirJumps > 0 ? airjumpIndicatorFull : airjumpIndicatorEmpty;
+        collectableDisplay.SetActive(collectableDisplayTimer > 0);
 
         // Player movement
         Vector3 delta = Move(_moveInputDir, characterController.velocity + applyForce);
@@ -380,7 +390,7 @@ public class Player : MonoBehaviour
     public void OnRestart(InputValue value)
     {
         characterController.enabled = false;
-        transform.position = new Vector3(0, 2, 0);
+        transform.position = spawnPosition;
         characterController.enabled = true;
     }
 
@@ -414,6 +424,18 @@ public class Player : MonoBehaviour
     public void DisableGravityForSeconds(float s)
     {
         disableGravityTimer = s;
+    }
+
+    public void GetCollectable()
+    {
+        collectableCount++;
+        collectableDisplayTimer = 3f;
+        collectableText.text = "x" + collectableCount;
+    }
+
+    public void SetSpawn(Vector3 pos)
+    {
+        spawnPosition = pos;
     }
 
     private bool GroundCheck()

@@ -20,14 +20,15 @@ public class AttackableBalloon : AttackableBase
 
     public void Update()
     {
+        float lastTime = reappearTimer;
         reappearTimer -= Time.deltaTime;
         _collider.enabled = reappearTimer < 0;
         _spriteRenderer.enabled = reappearTimer < _reappearTime / 1.25f;
         if (reappearTimer > 0)
         {
             _spriteRenderer.sprite = usedSprite; 
-            if (reappearTimer - Time.deltaTime < 0) _spriteRenderer.sprite = unhighlightedSprite;
         }
+        else if (reappearTimer < 0 && lastTime > 0) UpdateSprite();
     }
 
     public override void OnAttacked(Player attacker)
@@ -35,14 +36,19 @@ public class AttackableBalloon : AttackableBase
         attacker.ApplyForce(Vector3.Scale(attacker.GetLookVector(), _dashSpeed));
         attacker.DisableGravityForSeconds(_disableGravTime);
         reappearTimer = _reappearTime;
+        SetHighlight(false);
     }
 
     public override void SetHighlight(bool highlighted)
     {
-        if (isHighlighted == highlighted || reappearTimer > 0) return;
+        if (isHighlighted == highlighted) return;
         isHighlighted = highlighted;
+        if (reappearTimer < 0) UpdateSprite();
+    }
 
-        if (highlighted)
+    private void UpdateSprite()
+    {
+        if (isHighlighted)
         {
             _spriteRenderer.sprite = highlightedSprite;
         }
