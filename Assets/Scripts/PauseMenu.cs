@@ -1,0 +1,26 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+using System;
+
+public class PauseMenu : MonoBehaviour
+{
+    private PlayerInput playerInput;
+    [SerializeField] private PlayerPrefSetter[] prefSetters;
+    void Start()
+    {
+        gameObject.SetActive(false);
+        playerInput = FindFirstObjectByType<PlayerInput>();
+    }
+    void OnEnable()
+    {
+        if (playerInput) playerInput.enabled = false;
+        Cursor.lockState = CursorLockMode.None;
+        Array.ForEach(prefSetters, pref => pref.Sync());
+    }
+
+    void OnDisable()
+    {
+        if (playerInput) playerInput.enabled = true;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+}

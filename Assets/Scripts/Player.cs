@@ -34,6 +34,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float _wallRunSpeed;
     [SerializeField] private float _attackCooldown;
     [SerializeField] private float _attackRange;
+    [SerializeField] private float _deathPlaneY;
     // Wall run cooldown and reduced air control after walljump
     [SerializeField] private float _wallRunRecoveryTime;
     [SerializeField] private float _wallJumpLatVel;
@@ -68,7 +69,8 @@ public class Player : MonoBehaviour
     private float collectableDisplayTimer = 0f;
     [SerializeField] private TextMeshProUGUI collectableText;
     private Vector3 spawnPosition;
-    
+    private Vector3 spawnRotation;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -149,6 +151,9 @@ public class Player : MonoBehaviour
 
         // Cap fall speed
         delta.y = Math.Max(delta.y, inWallrun ? 0 : _maxFallSpeed);
+
+        // Check if below death plane
+        if (transform.position.y < _deathPlaneY) Respawn();
 
         // Camera tilt logic
         cameraTransform.eulerAngles = new Vector3(
@@ -248,8 +253,11 @@ public class Player : MonoBehaviour
             groundMask
         );
 
-        // Don't wallrun if no wall is found, input is not perpendicular to wall, or we are grounded
-        if (hit.normal == Vector3.zero || Vector3.Dot(hit.normal, inputDir) > 0 || grounded) 
+        // Don't wallrun if no wall is found, input is not perpendicular to wall, or we are grounded, or not fast enough
+        if (hit.normal == Vector3.zero || 
+            Vector3.Dot(hit.normal, inputDir) > 0 || 
+            grounded || 
+            Vector3.Scale(characterController.velocity, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime * 0.75) 
         {
             camTiltVel = 0f;
             return false;
@@ -296,7 +304,7 @@ public class Player : MonoBehaviour
         float oldyspeed = currentVel.y;
         currentVel.y = 0;
 
-        float dot = Vector3.Dot(currentVel, inputDir);
+        float dot = Vector3.Dot(currentVel.normalized, inputDir);
 
         float magnitude = currentVel.magnitude;
         currentVel.Normalize();
@@ -389,8 +397,15 @@ public class Player : MonoBehaviour
 
     public void OnRestart(InputValue value)
     {
+        Respawn();
+    }
+
+    public void Respawn()
+    {
         characterController.enabled = false;
         transform.position = spawnPosition;
+        transform.forward = spawnRotation;
+        ApplyForce(-characterController.velocity);
         characterController.enabled = true;
     }
 
@@ -433,13 +448,20 @@ public class Player : MonoBehaviour
         collectableText.text = "x" + collectableCount;
     }
 
-    public void SetSpawn(Vector3 pos)
+    public void SetSpawn(Vector3 pos, Vector3 rot)
     {
         spawnPosition = pos;
+        spawnRotation = rot;
+    }
+
+    public void OnPause(InputValue value)
+    {
+        if (value.isPressed) 
+            FindObjectsByType<PauseMenu>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0].gameObject.SetActive(true);
     }
 
     private bool GroundCheck()
     {
-        return Physics.Raycast(transform.position + characterController.center, Vector3.down, characterController.height * 0.55f, groundMask);
+        return Physics.Raycast(transform.position + characterController.center, Vector3.down, characterController.height * 0.56f, groundMask);
     }
 }

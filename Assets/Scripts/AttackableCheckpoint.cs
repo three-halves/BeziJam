@@ -1,14 +1,13 @@
 using UnityEngine;
 
-public class AttackableCollectable : AttackableBase
+public class AttackableCheckpoint : AttackableBase
 {
     [SerializeField] private Collider _collider;
     [SerializeField] private SpriteRenderer _spriteRenderer;
     [SerializeField] private Sprite unhighlightedSprite;
     [SerializeField] private Sprite highlightedSprite;
-    [SerializeField] private ParticleSystem collectParticles;
-    [SerializeField] private Sprite[] litAnimation;
-    private bool isLit = false;
+    [SerializeField] private Sprite hitSprite;
+    private float lastHitTimer;
 
     public override void Start()
     {
@@ -17,19 +16,19 @@ public class AttackableCollectable : AttackableBase
 
     public void Update()
     {
-        if (isLit)
+        lastHitTimer += Time.deltaTime;
+        if (lastHitTimer > 1f)
         {
-            _spriteRenderer.sprite = litAnimation[(int)(Time.time * 2 % 2)];
+            _collider.enabled = true;
         }
+        UpdateSprite();
     }
 
     public override void OnAttacked(Player attacker)
     {
-        isLit = true;
-        attacker.GetCollectable();
+        lastHitTimer = 0f;
         attacker.SetSpawn(attacker.transform.position, attacker.transform.forward);
         _collider.enabled = false;
-        collectParticles.Play();
     }
 
     public override void SetHighlight(bool highlighted)
@@ -41,7 +40,11 @@ public class AttackableCollectable : AttackableBase
 
     private void UpdateSprite()
     {
-        if (isHighlighted)
+        if (lastHitTimer < 0.5f)
+        {
+            _spriteRenderer.sprite = hitSprite;
+        }
+        else if (isHighlighted)
         {
             _spriteRenderer.sprite = highlightedSprite;
         }
