@@ -7,8 +7,6 @@ using UnityEngine.UI;
 public class Player : MonoBehaviour
 {
     private Transform cameraTransform;
-    [SerializeField] private Vector2 camSens;
-
     [SerializeField] CharacterController characterController;
     [SerializeField] private TextMeshProUGUI debugText;
     [SerializeField] private Animator swordAnimator;
@@ -335,12 +333,16 @@ public class Player : MonoBehaviour
     {
         if (cameraTransform == null) return;
         Vector2 v = value.Get<Vector2>();
+        Vector2 sens = new (
+            PlayerPrefs.GetFloat("xsens", 0.1f) * (PlayerPrefs.GetInt("xinvert", 0) == 0 ? 1 : -1),
+            PlayerPrefs.GetFloat("ysens", 0.1f) * (PlayerPrefs.GetInt("yinvert", 1) == 0 ? 1 : -1)
+        );
+        Debug.Log(PlayerPrefs.GetFloat("xsens"));
         // Rotate user and cam to with mouse x movement
-        transform.Rotate(Vector3.up, v.x * camSens.x, Space.World);
-        // cameraTransform.Rotate(Vector3.up, v.x * camSens.x, Space.World);
+        transform.Rotate(Vector3.up, v.x * sens.x, Space.World);
 
         // Rotate only cam with mouse y movement
-        cameraTransform.Rotate(Vector3.right, v.y * camSens.y, Space.Self);
+        cameraTransform.Rotate(Vector3.right, v.y * sens.y, Space.Self);
         CalculateMoveInputDir();
     }
 
