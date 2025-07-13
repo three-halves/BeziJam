@@ -26,6 +26,7 @@ public class AttackableCheckpoint : AttackableBase
 
     public override void OnAttacked(Player attacker)
     {
+        base.OnAttacked(attacker);
         lastHitTimer = 0f;
         attacker.SetSpawn(attacker.transform.position, attacker.transform.forward);
         _collider.enabled = false;

@@ -33,6 +33,7 @@ public class AttackableBalloon : AttackableBase
 
     public override void OnAttacked(Player attacker)
     {
+        base.OnAttacked(attacker);
         attacker.ApplyForce(Vector3.Scale(attacker.GetLookVector(), _dashSpeed));
         attacker.DisableGravityForSeconds(_disableGravTime);
         reappearTimer = _reappearTime;

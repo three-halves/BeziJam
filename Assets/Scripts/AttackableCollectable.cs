@@ -25,6 +25,7 @@ public class AttackableCollectable : AttackableBase
 
     public override void OnAttacked(Player attacker)
     {
+        base.OnAttacked(attacker);
         isLit = true;
         attacker.GetCollectable();
         attacker.SetSpawn(attacker.transform.position, attacker.transform.forward);

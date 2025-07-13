@@ -43,6 +43,11 @@ public class Player : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private LayerMask attackableMask;
 
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip jumpSFX;
+    [SerializeField] private AudioClip attackSFX;
+    [SerializeField] private AudioClip[] wallRunSFX;
+
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
     private int currentAirJumps;
@@ -106,9 +111,16 @@ public class Player : MonoBehaviour
 
         CheckHighlightableObjects();
 
+        float scaledWallTimer = Mathf.Floor(wallRunTimer / _wallRunTime * 16) / 16;
+        if (inWallrun && meterFill.fillAmount != scaledWallTimer)
+        {
+            audioSource.pitch = 1f;
+            audioSource.PlayOneShot(wallRunSFX[(int)(scaledWallTimer * 16) % wallRunSFX.Length]);
+        }
+
         // UI
         meterParent.SetActive(inWallrun);
-        meterFill.fillAmount = Mathf.Floor(wallRunTimer / _wallRunTime * 16) / 16;
+        meterFill.fillAmount = scaledWallTimer;
         airjumpIndicator.sprite = currentAirJumps > 0 ? airjumpIndicatorFull : airjumpIndicatorEmpty;
         collectableDisplay.SetActive(collectableDisplayTimer > 0);
 
@@ -136,10 +148,15 @@ public class Player : MonoBehaviour
 
             // Apply vertical jump force
             delta.y = _jumpVel * Time.fixedDeltaTime;
+
             jumpPressed = false;
 
             // Remove airjump if appropriate
             if (!grounded && !inWallrun) currentAirJumps--;
+
+            // sound effect
+            audioSource.pitch = 0.85f + (1 - currentAirJumps) * 0.24f;
+            audioSource.PlayOneShot(jumpSFX);
 
         }
 
@@ -337,7 +354,6 @@ public class Player : MonoBehaviour
             PlayerPrefs.GetFloat("xsens", 0.1f) * (PlayerPrefs.GetInt("xinvert", 0) == 0 ? 1 : -1),
             PlayerPrefs.GetFloat("ysens", 0.1f) * (PlayerPrefs.GetInt("yinvert", 1) == 0 ? 1 : -1)
         );
-        Debug.Log(PlayerPrefs.GetFloat("xsens"));
         // Rotate user and cam to with mouse x movement
         transform.Rotate(Vector3.up, v.x * sens.x, Space.World);
 
@@ -418,6 +434,9 @@ public class Player : MonoBehaviour
         attackTimer = _attackCooldown;
         swordAnimator.ResetTrigger("Attack");
         swordAnimator.SetTrigger("Attack");
+
+        audioSource.pitch = 1f;
+        audioSource.PlayOneShot(attackSFX);
 
         // raycast forward and check if hit
         Physics.Raycast(
