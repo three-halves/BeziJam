@@ -58,6 +58,7 @@ public class Player : MonoBehaviour
     private Vector3 WallRunNormal;
     private float attackTimer = 0f;
     private AttackableBase highlightedObject;
+    private Vector3 wallRunCastVector;
 
     private float disableGravityTimer = 0f;
 
@@ -231,6 +232,12 @@ public class Player : MonoBehaviour
         {
             wallRunTimer = _wallRunTime;
             currentAirJumps = _airJumps;
+            wallRunCastVector = transform.right;
+
+            wallRunDirection = Vector3.Cross(Vector3.up, WallRunNormal);
+            float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
+            wallRunDirection *= s;
+            camTiltVel = 15 * s;
         }
 
         // Run current state movement
@@ -256,24 +263,24 @@ public class Player : MonoBehaviour
     {
         Physics.Raycast(
             transform.position + characterController.center,
-            transform.right,
+            wallRunTimer <= 0 ? transform.right : wallRunCastVector,
             out RaycastHit hit,
-            characterController.radius * 1.5f * (wallRunTimer > 0 ? 20f : 1f),
+            characterController.radius * 1.5f,
             groundMask
         );
         // check left wall if no right wall found
         if (hit.normal == Vector3.zero)
             Physics.Raycast(
             transform.position + characterController.center,
-            transform.right * -1,
+            (wallRunTimer <= 0 ? transform.right : wallRunCastVector) * -1,
             out hit,
-            characterController.radius * 1.5f * (wallRunTimer > 0 ? 20f : 1f),
+            characterController.radius * 1.5f,
             groundMask
         );
 
         // Don't wallrun if no wall is found, input is not perpendicular to wall, or we are grounded, or not fast enough
         if (hit.normal == Vector3.zero || 
-            Vector3.Dot(hit.normal, inputDir) > 0 || 
+            Vector3.Dot(hit.normal, inputDir) == 0 || 
             grounded || 
             Vector3.Scale(characterController.velocity, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime * 0.75) 
         {
@@ -281,11 +288,7 @@ public class Player : MonoBehaviour
             return false;
         }
 
-        // Otherwise, initiate wallrun
-        wallRunDirection = Vector3.Cross(Vector3.up, hit.normal);
-        float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
-        wallRunDirection *= s;
-        camTiltVel = 15 * s;
+        // Otherwise, initiate/continue wallrun
         WallRunNormal = hit.normal;
         return true;
     }
