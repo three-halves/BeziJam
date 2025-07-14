@@ -1,17 +1,9 @@
 using System;
+using UnityEngine;
 
-public class WorldState 
+public class WorldState : MonoBehaviour
 {
-    private static WorldState _instance = null;
-
-    public static WorldState Instance
-    {
-        get
-        {
-            _instance ??= new WorldState();
-            return _instance;
-        }
-    }
+    public static WorldState Instance {get; private set;}
 
     private bool _blockToggled = false;
     public bool BlockToggled
@@ -20,7 +12,34 @@ public class WorldState
         set 
         {
              _blockToggled = value;
-             BlockToggledListener.Invoke(value);
+             BlockToggledListener?.Invoke(value);
+        }
+    }
+
+    [SerializeField] int requiredCollectables;
+    [NonSerialized] public int collectableCount;
+
+    [SerializeField] private GameObject[] destroyOnFirstCollectable;
+    [SerializeField] private GameObject[] setActiveOnRequiredCollectables;
+
+    void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    public void GetCollectable()
+    {
+        collectableCount++;
+        if (collectableCount == 1)
+        {
+            foreach (var o in destroyOnFirstCollectable)
+                Destroy(o);
+        }
+        if (collectableCount == requiredCollectables)
+        {
+            foreach (var o in setActiveOnRequiredCollectables)
+                o.SetActive(true);
         }
     }
 

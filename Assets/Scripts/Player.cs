@@ -68,8 +68,6 @@ public class Player : MonoBehaviour
     private float targetCameraTilt = 0f;
     private float camTiltVel = 0f;
     
-    private int collectableCount = 0;
-    private int maxCollectableCount = 10;
     [SerializeField] private GameObject collectableDisplay;
     private float collectableDisplayTimer = 0f;
     [SerializeField] private TextMeshProUGUI collectableText;
@@ -91,6 +89,7 @@ public class Player : MonoBehaviour
         // Camera.main.GetComponent<FollowTransform>().SetToFollow(transform);
         // Camera.main.GetComponent<FollowTransform>().enabled = true;
         spawnPosition = transform.position;
+        spawnRotation = transform.forward;
     }
 
     void FixedUpdate()
@@ -479,9 +478,9 @@ public class Player : MonoBehaviour
 
     public void GetCollectable()
     {
-        collectableCount++;
+        WorldState.Instance.GetCollectable();
         collectableDisplayTimer = 3f;
-        collectableText.text = "x" + collectableCount;
+        collectableText.text = "x" + WorldState.Instance.collectableCount;
     }
 
     public void SetSpawn(Vector3 pos, Vector3 rot)
