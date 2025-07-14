@@ -1,4 +1,6 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 public class AttackableSceneChange : AttackableBase
@@ -9,6 +11,7 @@ public class AttackableSceneChange : AttackableBase
     [SerializeField] private Sprite highlightedSprite;
     [SerializeField] private Sprite hitSprite;
     [SerializeField] private string _scene;
+    [SerializeField] private float _delay;
 
     public override void Start()
     {
@@ -18,8 +21,16 @@ public class AttackableSceneChange : AttackableBase
     public override void OnAttacked(Player attacker)
     {
         base.OnAttacked(attacker);
-        SceneManager.LoadScene(_scene);
+        attacker.GetComponent<PlayerInput>().enabled = false;
         _collider.enabled = false;
+        _spriteRenderer.sprite = hitSprite;
+        StartCoroutine(SwitchSceneWithDelay());
+    }
+
+    public IEnumerator SwitchSceneWithDelay()
+    {
+        yield return new WaitForSeconds(_delay);
+        SceneManager.LoadScene(_scene);
     }
 
     public override void SetHighlight(bool highlighted)
@@ -31,6 +42,7 @@ public class AttackableSceneChange : AttackableBase
 
     private void UpdateSprite()
     {
+        if (!_collider.enabled) return;
         if (isHighlighted)
         {
             _spriteRenderer.sprite = highlightedSprite;
