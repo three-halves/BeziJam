@@ -28626,7 +28626,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: feece22f8b460974cbd398f1a93faa46, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requiredCollectables: 1
+  requiredCollectables: 4
   destroyOnFirstCollectable:
   - {fileID: 178571304}
   - {fileID: 1820731843}
