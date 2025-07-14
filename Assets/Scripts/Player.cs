@@ -175,6 +175,7 @@ public class Player : MonoBehaviour
         if (transform.position.y < _deathPlaneY) Respawn();
 
         // Camera tilt logic
+        // if (!inWallrun) targetCameraTilt = 0f;
         cameraTransform.eulerAngles = new Vector3(
             targetCamPosition.y,
             cameraTransform.eulerAngles.y,
@@ -240,7 +241,8 @@ public class Player : MonoBehaviour
             wallRunDirection = Vector3.Cross(Vector3.up, WallRunNormal);
             float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
             wallRunDirection *= s;
-            camTiltVel = 18 * s;
+            targetCameraTilt = 5 * s;
+            jumpPressed = false;
         }
 
         // Run current state movement
@@ -287,7 +289,7 @@ public class Player : MonoBehaviour
             grounded || 
             Vector3.Scale(characterController.velocity, lateralVector).magnitude < _groundMaxVel * Time.fixedDeltaTime * 0.75) 
         {
-            camTiltVel = 0f;
+            targetCameraTilt = 0f;
             return false;
         }
 
