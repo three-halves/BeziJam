@@ -56,12 +56,12 @@ public class WorldState : MonoBehaviour
 
     private IEnumerator FadeIn() 
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(4f);
         float timer = 0;
 
         while (musicSource.volume < 1) 
         {
-            musicSource.volume = Mathf.Lerp(0, 1, timer / 5f);
+            musicSource.volume = Mathf.Lerp(0, 1, timer / 4f);
             timer += Time.deltaTime;
             yield return null;
         }
