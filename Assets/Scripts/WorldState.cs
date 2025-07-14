@@ -56,7 +56,7 @@ public class WorldState : MonoBehaviour
 
     private IEnumerator FadeIn() 
     {
-        yield return new WaitForSeconds(4f);
+        yield return new WaitForSeconds(3f);
         float timer = 0;
 
         while (musicSource.volume < 1) 

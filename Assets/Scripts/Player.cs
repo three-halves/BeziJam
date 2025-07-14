@@ -92,6 +92,24 @@ public class Player : MonoBehaviour
         spawnRotation = transform.forward;
     }
 
+    void Update()
+    {
+        float effectSpeed = Mathf.Max(0, Vector3.Scale(characterController.velocity, lateralVector).magnitude - _groundMaxVel * 1.1f);
+        // camera fov effects
+        if (PlayerPrefs.GetInt("fovfx", 1) == 1)
+        {
+            Camera.main.fieldOfView = PlayerPrefs.GetFloat("fov", 90) + effectSpeed * 0.5f;
+        }
+
+        // Camera tilt logic
+        // if (!inWallrun) targetCameraTilt = 0f;
+        cameraTransform.eulerAngles = new Vector3(
+            targetCamPosition.y,
+            cameraTransform.eulerAngles.y,
+            Mathf.SmoothDampAngle(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
+        );
+    }
+
     void FixedUpdate()
     {
         debugText.text = string.Format(
@@ -173,14 +191,6 @@ public class Player : MonoBehaviour
 
         // Check if below death plane
         if (transform.position.y < _deathPlaneY) Respawn();
-
-        // Camera tilt logic
-        // if (!inWallrun) targetCameraTilt = 0f;
-        cameraTransform.eulerAngles = new Vector3(
-            targetCamPosition.y,
-            cameraTransform.eulerAngles.y,
-            Mathf.SmoothDampAngle(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
-        );
 
         if (respawnedThisTick) delta = Vector3.zero;
         respawnedThisTick = false;
