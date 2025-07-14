@@ -77,6 +77,8 @@ public class Player : MonoBehaviour
     private Vector3 spawnRotation;
     private Vector2 targetCamPosition = Vector2.zero;
 
+    private bool respawnedThisTick;
+
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -180,7 +182,9 @@ public class Player : MonoBehaviour
             Mathf.SmoothDampAngle(cameraTransform.eulerAngles.z, targetCameraTilt, ref camTiltVel, 0.1f)
         );
 
-        
+        if (respawnedThisTick) delta = Vector3.zero;
+        respawnedThisTick = false;
+
         characterController.Move(delta);
     }
 
@@ -237,7 +241,7 @@ public class Player : MonoBehaviour
             wallRunDirection = Vector3.Cross(Vector3.up, WallRunNormal);
             float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
             wallRunDirection *= s;
-            camTiltVel = 15 * s;
+            camTiltVel = 18 * s;
         }
 
         // Run current state movement
@@ -433,7 +437,8 @@ public class Player : MonoBehaviour
         characterController.enabled = false;
         transform.position = spawnPosition;
         transform.forward = spawnRotation;
-        ApplyForce(-characterController.velocity);
+        respawnedThisTick = true;
+        CalculateMoveInputDir();
         characterController.enabled = true;
     }
 
