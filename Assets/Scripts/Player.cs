@@ -48,6 +48,7 @@ public class Player : MonoBehaviour
     [SerializeField] private AudioClip jumpSFX;
     [SerializeField] private AudioClip attackSFX;
     [SerializeField] private AudioClip[] wallRunSFX;
+    [SerializeField] private AudioClip deathSFX;
 
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
@@ -450,6 +451,10 @@ public class Player : MonoBehaviour
         transform.forward = spawnRotation;
         respawnedThisTick = true;
         CalculateMoveInputDir();
+
+        audioSource.pitch = 1f;
+        audioSource.PlayOneShot(deathSFX);
+        
         characterController.enabled = true;
     }
 

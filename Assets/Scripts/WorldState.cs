@@ -50,7 +50,6 @@ public class WorldState : MonoBehaviour
     private void StartMusic()
     {
         musicSource = GameObject.Find("Music").GetComponent<AudioSource>();
-        musicSource.Play();
         StartCoroutine(FadeIn());
     }
 
@@ -58,7 +57,7 @@ public class WorldState : MonoBehaviour
     {
         yield return new WaitForSeconds(3f);
         float timer = 0;
-
+        musicSource.Play();
         while (musicSource.volume < 1) 
         {
             musicSource.volume = Mathf.Lerp(0, 1, timer / 4f);

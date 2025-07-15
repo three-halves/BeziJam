@@ -86,6 +86,7 @@ MonoBehaviour:
   wallRunSFX:
   - {fileID: 8300000, guid: 667f5e17793fc114cb0b5f753c2971c6, type: 3}
   - {fileID: 8300000, guid: 6f3b939fb01fba443bb5e1afe2e796b4, type: 3}
+  deathSFX: {fileID: 8300000, guid: 9881ae2623722db46a9965a591f83f63, type: 3}
   collectableDisplay: {fileID: 0}
   collectableText: {fileID: 0}
 --- !u!143 &8169893787123187222
