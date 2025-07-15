@@ -50,6 +50,8 @@ public class Player : MonoBehaviour
     [SerializeField] private AudioClip[] wallRunSFX;
     [SerializeField] private AudioClip deathSFX;
 
+    [SerializeField] private AudioSource windAudioSource;
+
     private Vector3 _moveInputDir = Vector3.zero;
     private Vector3 _rawMoveInputDir = Vector3.zero;
     private int currentAirJumps;
@@ -101,6 +103,7 @@ public class Player : MonoBehaviour
         {
             Camera.main.fieldOfView = PlayerPrefs.GetFloat("fov", 90) + effectSpeed * 0.5f;
         }
+        windAudioSource.volume = effectSpeed / 40f;
 
         // Camera tilt logic
         // if (!inWallrun) targetCameraTilt = 0f;
