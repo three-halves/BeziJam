@@ -6,6 +6,9 @@ public class WorldState : MonoBehaviour
 {
     public static WorldState Instance {get; private set;}
 
+    // Seconds
+    public static float PlayTime {get; private set;} = 0f;
+
     private bool _blockToggled = false;
     public bool BlockToggled
     {
@@ -29,6 +32,11 @@ public class WorldState : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+    }
+
+    void Update()
+    {
+        PlayTime += Time.deltaTime;
     }
 
     public void GetCollectable()
