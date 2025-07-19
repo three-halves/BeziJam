@@ -529,6 +529,12 @@ public class Player : MonoBehaviour
 
     private bool GroundCheck()
     {
-        return Physics.Raycast(transform.position + characterController.center, Vector3.down, characterController.height * 0.56f, groundMask);
+        float dist = characterController.height * 0.56f;
+        Vector3 origin = transform.position + characterController.center;
+        Vector3 offset = transform.forward * characterController.radius;
+        return 
+            Physics.Raycast(origin, Vector3.down, dist, groundMask) 
+            || Physics.Raycast(origin + offset, Vector3.down, dist, groundMask)
+            || Physics.Raycast(origin - offset, Vector3.down, dist, groundMask);
     }
 }
