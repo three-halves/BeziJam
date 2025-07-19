@@ -391,19 +391,26 @@ public class Player : MonoBehaviour
         CalculateMoveInputDir();
     }
 
+    public void AttackableRaycast(out RaycastHit hit)
+    {
+        float range = _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime;
+        Physics.Raycast(
+            transform.position + characterController.center + cameraTransform.forward * range,
+            -cameraTransform.forward,
+            out hit,
+            range,
+            attackableMask
+        );
+
+    }
+
     /// <summary>
     /// Check if there are any attackable objects in attack range to highlight
     /// </summary>
     private void CheckHighlightableObjects()
     {
         // check if there are any objects we can highlight
-        Physics.Raycast(
-            transform.position + characterController.center,
-            cameraTransform.forward,
-            out RaycastHit hit,
-            _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime,
-            attackableMask
-        );
+        AttackableRaycast(out RaycastHit hit);
 
         if (hit.collider == null)
         {
@@ -473,13 +480,8 @@ public class Player : MonoBehaviour
         audioSource.PlayOneShot(attackSFX);
 
         // raycast forward and check if hit
-        Physics.Raycast(
-            transform.position + characterController.center,
-            cameraTransform.forward,
-            out RaycastHit hit,
-            _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime,
-            attackableMask
-        );
+        AttackableRaycast(out RaycastHit hit);
+
         if (hit.collider == null) return;
 
         if (hit.collider.TryGetComponent<AttackableBase>(out var attackedObj)) 

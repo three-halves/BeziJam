@@ -75501,6 +75501,10 @@ PrefabInstance:
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8627846231385037244, guid: 8fdd4ed6653f4ed47864388066dafb42, type: 3}
+      propertyPath: _attackRange
+      value: 4.35
+      objectReference: {fileID: 0}
     - target: {fileID: 8742345901942477643, guid: 8fdd4ed6653f4ed47864388066dafb42, type: 3}
       propertyPath: m_Name
       value: PlayerAndUI
