@@ -380,6 +380,10 @@ public class Player : MonoBehaviour
             PlayerPrefs.GetFloat("xsens", 0.1f) * (PlayerPrefs.GetInt("xinvert", 0) == 0 ? 1 : -1),
             PlayerPrefs.GetFloat("ysens", 0.1f) * (PlayerPrefs.GetInt("yinvert", 1) == 0 ? 1 : -1)
         );
+
+        // Hack fix for webgl canvas bug
+        if (v.x * sens.x >= 90) v.x = 0;
+        if (v.y * sens.y >= 90) v.y = 0;
         // Rotate user and cam to with mouse x movement
         targetCamPosition.x += v.x * sens.x;
         transform.Rotate(Vector3.up, v.x * sens.x, Space.World);
