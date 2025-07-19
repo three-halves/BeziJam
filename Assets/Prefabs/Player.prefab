@@ -69,7 +69,7 @@ MonoBehaviour:
   _wallRunTime: 1.25
   _wallRunSpeed: 20
   _attackCooldown: 0.5
-  _attackRange: 4.25
+  _attackRange: 4.4
   _deathPlaneY: -20
   _wallRunRecoveryTime: 0.5
   _wallJumpLatVel: 0.5

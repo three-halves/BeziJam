@@ -395,6 +395,16 @@ public class Player : MonoBehaviour
     {
         float range = _attackRange + characterController.velocity.magnitude * Time.fixedDeltaTime;
         Physics.Raycast(
+            transform.position + characterController.center,
+            cameraTransform.forward,
+            out hit,
+            range,
+            attackableMask
+        );
+
+        if (hit.collider != null) return;
+
+        Physics.Raycast(
             transform.position + characterController.center + cameraTransform.forward * range,
             -cameraTransform.forward,
             out hit,
