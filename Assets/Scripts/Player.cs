@@ -3,6 +3,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Player : MonoBehaviour
@@ -525,6 +526,12 @@ public class Player : MonoBehaviour
     {
         if (value.isPressed) 
             FindObjectsByType<PauseMenu>(FindObjectsInactive.Include, FindObjectsSortMode.None)[0].gameObject.SetActive(true);
+    }
+
+    public void OnNewGame(InputValue value)
+    {
+        if (!value.isPressed) return;
+        SceneManager.LoadScene("Main");
     }
 
     private bool GroundCheck()

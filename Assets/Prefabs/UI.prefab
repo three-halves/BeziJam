@@ -458,6 +458,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8810443732830684725}
   - component: {fileID: 1572936518826691859}
+  - component: {fileID: 3135169153401290602}
   m_Layer: 5
   m_Name: CrosshairToggle
   m_TagString: Untagged
@@ -533,6 +534,18 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 3135169153401290602}
+        m_TargetAssemblyTypeName: PlayerPrefSetter, Assembly-CSharp
+        m_MethodName: SetPrefBool
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 4935129777369345192}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -546,6 +559,22 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_IsOn: 1
+--- !u!114 &3135169153401290602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1568968962785323589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 433c353ae7064214aa447e6d2f30ef0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: crosshair
+  defaultValue: 1
+  slider: {fileID: 0}
+  toggle: {fileID: 1572936518826691859}
 --- !u!1 &1757215504492665641
 GameObject:
   m_ObjectHideFlags: 0
@@ -1839,6 +1868,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5296715724373444895}
   - component: {fileID: 2881567890772148873}
+  - component: {fileID: 9029943519615495244}
   m_Layer: 5
   m_Name: TimerToggle
   m_TagString: Untagged
@@ -1914,6 +1944,18 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls:
+      - m_Target: {fileID: 9029943519615495244}
+        m_TargetAssemblyTypeName: PlayerPrefSetter, Assembly-CSharp
+        m_MethodName: SetPrefBool
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
       - m_Target: {fileID: 2786006479589591180}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
@@ -1927,6 +1969,22 @@ MonoBehaviour:
           m_BoolArgument: 0
         m_CallState: 2
   m_IsOn: 0
+--- !u!114 &9029943519615495244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4631821327747233322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 433c353ae7064214aa447e6d2f30ef0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: timer
+  defaultValue: 0
+  slider: {fileID: 0}
+  toggle: {fileID: 2881567890772148873}
 --- !u!1 &4672253074548993862
 GameObject:
   m_ObjectHideFlags: 0
@@ -2766,6 +2824,8 @@ MonoBehaviour:
   - {fileID: 8901833213534404939}
   - {fileID: 4293287329120802122}
   - {fileID: 125150591830525059}
+  - {fileID: 3135169153401290602}
+  - {fileID: 9029943519615495244}
 --- !u!1 &5473213013966442334
 GameObject:
   m_ObjectHideFlags: 0

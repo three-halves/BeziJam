@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class WorldState : MonoBehaviour
 {
@@ -32,6 +33,11 @@ public class WorldState : MonoBehaviour
     {
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+    }
+
+    void Start()
+    {
+        if (SceneManager.GetSceneByName("Main") != null) PlayTime = 0f;
     }
 
     void Update()
