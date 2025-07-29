@@ -17,7 +17,8 @@ public class Player : MonoBehaviour
     [SerializeField] private Sprite airjumpIndicatorFull;
     [SerializeField] private Sprite airjumpIndicatorEmpty;
     [SerializeField] private Image airjumpIndicator;
-    private bool jumpPressed = false;
+    private bool jumpHeld = false;
+    private bool jumpedThisInput = false;
     private bool groundedLastTick = false;
     private bool grounded = false;
 
@@ -121,7 +122,7 @@ public class Player : MonoBehaviour
             "CCVel:\t{0}\nInputDir:\t{1}\n{2}\nGrounded: {3}\n{4}", 
             characterController.velocity, 
             _moveInputDir, 
-            jumpPressed, 
+            jumpHeld, 
             grounded, 
             wallRunTimer
         );
@@ -156,7 +157,7 @@ public class Player : MonoBehaviour
         applyForce = Vector3.zero;
 
         // Jump logic
-        if (jumpPressed && (grounded || currentAirJumps > 0 || inWallrun))
+        if (jumpHeld && (grounded || (currentAirJumps > 0 && !jumpedThisInput) || inWallrun))
         {
             // Redirect all lateral movement in jump direction
             if(_moveInputDir != Vector3.zero)
@@ -176,7 +177,7 @@ public class Player : MonoBehaviour
             // Apply vertical jump force
             delta.y = _jumpVel * Time.fixedDeltaTime;
 
-            jumpPressed = false;
+            jumpedThisInput = true;
 
             // Remove airjump if appropriate
             if (!grounded && !inWallrun) currentAirJumps--;
@@ -257,7 +258,7 @@ public class Player : MonoBehaviour
             float s = Mathf.Sign(Vector3.Dot(wallRunDirection, transform.forward));
             wallRunDirection *= s;
             targetCameraTilt = 5 * s;
-            jumpPressed = false;
+            jumpHeld = false;
         }
 
         // Run current state movement
@@ -461,7 +462,8 @@ public class Player : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
-        jumpPressed = value.isPressed;
+        jumpHeld = value.isPressed;
+        jumpedThisInput = false;
     }
 
     public void OnRestart(InputValue value)
